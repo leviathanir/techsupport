@@ -20,6 +20,3 @@
 - CSS3 (переменные, псевдоклассы, псевдоэлементы, анимации)
 - JavaScript (ES6+, модули, async/await, Fetch API)
 - LocalStorage для сохранения истории
-
-
-MIT
