@@ -4,7 +4,501 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechSupport - Чат поддержки</title>
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* CSS переменные */
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #10b981;
+            --background: #f9fafb;
+            --surface: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --user-message-bg: #e0f2fe;
+            --bot-message-bg: #f3f4f6;
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            
+            --border-radius-sm: 8px;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 20px;
+            --spacing-xl: 24px;
+            
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-size-sm: 0.875rem;
+            --font-size-md: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        /* Сброс стилей */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: var(--spacing-md);
+        }
+
+        /* Контейнер чата */
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: var(--surface);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Шапка чата */
+        .chat-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border-color);
+            padding: var(--spacing-md) var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bot-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .bot-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: transform var(--transition-normal);
+        }
+
+        .bot-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .bot-status h1 {
+            font-size: var(--font-size-xl);
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .status-badge {
+            font-size: var(--font-size-sm);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            background: var(--background);
+            color: var(--text-secondary);
+        }
+
+        .status-badge.online {
+            background: var(--success-color);
+            color: white;
+        }
+
+        /* Кнопка очистки чата */
+        .clear-chat-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: var(--spacing-sm);
+            border-radius: 50%;
+            transition: all var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .clear-chat-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width var(--transition-normal), height var(--transition-normal);
+        }
+
+        .clear-chat-btn:hover {
+            color: var(--error-color);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .clear-chat-btn:hover::before {
+            width: 40px;
+            height: 40px;
+        }
+
+        /* Основная область чата */
+        .chat-main {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg);
+            background: var(--background);
+            position: relative;
+        }
+
+        .messages-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        /* Стили сообщений */
+        .message {
+            max-width: 80%;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--border-radius-md);
+            animation: fadeIn 0.3s ease;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: var(--spacing-xs);
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: var(--surface);
+            color: var(--text-primary);
+            border-bottom-left-radius: var(--spacing-xs);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 12px;
+            height: 12px;
+        }
+
+        .message.user::after {
+            right: -6px;
+            background: var(--primary-color);
+            clip-path: polygon(0 0, 0% 100%, 100% 0);
+        }
+
+        .message.bot::after {
+            left: -6px;
+            background: var(--surface);
+            clip-path: polygon(100% 0, 0 0, 100% 100%);
+        }
+
+        .message-time {
+            font-size: var(--font-size-sm);
+            opacity: 0.7;
+            margin-top: var(--spacing-xs);
+            text-align: right;
+        }
+
+        /* Индикатор печатания */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background: var(--surface);
+            border-radius: var(--border-radius-md);
+            width: fit-content;
+            margin-top: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        .typing-indicator.visible {
+            display: flex;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: typingBounce 1.4s ease infinite;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        .typing-text {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+            margin-left: var(--spacing-xs);
+        }
+
+        /* Футер чата */
+        .chat-footer {
+            background: var(--surface);
+            border-top: 1px solid var(--border-color);
+            padding: var(--spacing-md);
+        }
+
+        .message-form {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            font-size: var(--font-size-md);
+            font-family: var(--font-family);
+            transition: all var(--transition-fast);
+            outline: none;
+        }
+
+        .message-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .message-input:disabled {
+            background: var(--background);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .message-input:invalid:not(:placeholder-shown) {
+            border-color: var(--error-color);
+        }
+
+        .message-input:valid:not(:placeholder-shown) {
+            border-color: var(--success-color);
+        }
+
+        /* Кнопка отправки */
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .send-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width var(--transition-normal), height var(--transition-normal);
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .send-btn:hover:not(:disabled)::after {
+            width: 60px;
+            height: 60px;
+        }
+
+        .send-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .send-btn:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Скроллбар */
+        .chat-main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-main::-webkit-scrollbar-track {
+            background: var(--background);
+        }
+
+        .chat-main::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: var(--border-radius-sm);
+        }
+
+        .chat-main::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            body {
+                padding: 0;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .bot-avatar {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .bot-status h1 {
+                font-size: var(--font-size-lg);
+            }
+            
+            .message {
+                max-width: 95%;
+                padding: var(--spacing-sm) var(--spacing-md);
+            }
+            
+            .send-btn {
+                width: 42px;
+                height: 42px;
+            }
+        }
+
+        /* Темная тема */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #1f2937;
+                --surface: #111827;
+                --text-primary: #f9fafb;
+                --text-secondary: #9ca3af;
+                --border-color: #374151;
+                --user-message-bg: #1e3a8a;
+                --bot-message-bg: #1f2937;
+            }
+            
+            body {
+                background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            }
+            
+            .message.bot {
+                background: var(--surface);
+                color: var(--text-primary);
+            }
+            
+            .message.bot::after {
+                background: var(--surface);
+            }
+        }
+
+        /* Стили для уведомления об ошибке */
+        .error-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--error-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="chat-container">
@@ -58,6 +552,300 @@
         </footer>
     </div>
 
-    <script type="module" src="js/app.js"></script>
+    <script>
+        (function() {
+            // ==================== API Module ====================
+            const botResponses = {
+                'привет': 'Здравствуйте! Чем могу помочь?',
+                'здравствуйте': 'Добрый день! Какой у вас вопрос?',
+                'гарантия': 'На все товары предоставляется гарантия 12 месяцев. Подробнее можно узнать на странице товара.',
+                'возврат': 'Возврат возможен в течение 14 дней с момента покупки при сохранении товарного вида и упаковки.',
+                'цена': 'Цены указаны на сайте. Есть ли у вас промокод?',
+                'доставка': 'Доставка осуществляется курьером или в пункты выдачи. Стоимость зависит от вашего города.',
+                'оплата': 'Мы принимаем карты, электронные деньги и наличные при получении.',
+                'контакты': 'Наши контакты: support@techshop.ru, 8-800-123-45-67',
+                'спасибо': 'Пожалуйста! Обращайтесь ещё :)',
+                'пока': 'До свидания! Хорошего дня!'
+            };
+
+            const defaultResponse = 'Извините, я не совсем понял ваш вопрос. Пожалуйста, переформулируйте или обратитесь к оператору.';
+            const STORAGE_KEY = 'chat_messages';
+
+            async function getBotResponse(userMessage) {
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+                    
+                    if (Math.random() < 0.1) {
+                        throw new Error('Ошибка соединения с сервером');
+                    }
+                    
+                    const normalizedMessage = userMessage.toLowerCase().trim();
+                    
+                    for (const [key, response] of Object.entries(botResponses)) {
+                        if (normalizedMessage.includes(key)) {
+                            return response;
+                        }
+                    }
+                    
+                    return defaultResponse;
+                } catch (error) {
+                    console.error('API Error:', error);
+                    throw new Error('Не удалось получить ответ от сервера. Пожалуйста, попробуйте позже.');
+                }
+            }
+
+            function saveMessages(messages) {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+                } catch (error) {
+                    console.error('Failed to save messages:', error);
+                }
+            }
+
+            function loadMessages() {
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    return saved ? JSON.parse(saved) : [];
+                } catch (error) {
+                    console.error('Failed to load messages:', error);
+                    return [];
+                }
+            }
+
+            function clearSavedMessages() {
+                localStorage.removeItem(STORAGE_KEY);
+            }
+
+            // ==================== UI Module ====================
+            class ChatUI {
+                constructor(messagesContainer, typingIndicator, messageInput, sendBtn, clearBtn) {
+                    this.messagesContainer = messagesContainer;
+                    this.typingIndicator = typingIndicator;
+                    this.messageInput = messageInput;
+                    this.sendBtn = sendBtn;
+                    this.clearBtn = clearBtn;
+                    this.chatMain = document.querySelector('.chat-main');
+                }
+
+                addMessage(text, sender) {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message', sender);
+                    
+                    const textElement = document.createElement('div');
+                    textElement.classList.add('message-text');
+                    textElement.textContent = text;
+                    
+                    const timeElement = document.createElement('div');
+                    timeElement.classList.add('message-time');
+                    timeElement.textContent = new Date().toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    
+                    messageElement.appendChild(textElement);
+                    messageElement.appendChild(timeElement);
+                    
+                    this.messagesContainer.appendChild(messageElement);
+                    this.scrollToBottom();
+                }
+
+                addMessages(messages) {
+                    messages.forEach(msg => this.addMessage(msg.text, msg.sender));
+                }
+
+                clearMessages() {
+                    this.messagesContainer.innerHTML = '';
+                }
+
+                scrollToBottom() {
+                    this.chatMain.scrollTop = this.chatMain.scrollHeight;
+                }
+
+                showTypingIndicator(show) {
+                    if (show) {
+                        this.typingIndicator.classList.add('visible');
+                    } else {
+                        this.typingIndicator.classList.remove('visible');
+                    }
+                    this.scrollToBottom();
+                }
+
+                setInputEnabled(enabled) {
+                    this.messageInput.disabled = !enabled;
+                    this.sendBtn.disabled = !enabled;
+                    
+                    if (enabled) {
+                        this.messageInput.focus();
+                    }
+                }
+
+                getInputText() {
+                    return this.messageInput.value.trim();
+                }
+
+                clearInput() {
+                    this.messageInput.value = '';
+                }
+
+                validateInput(text) {
+                    if (!text || text.length === 0) {
+                        this.showError('Поле не может быть пустым');
+                        return false;
+                    }
+                    
+                    if (text.length > 500) {
+                        this.showError('Сообщение слишком длинное (максимум 500 символов)');
+                        return false;
+                    }
+                    
+                    return true;
+                }
+
+                showError(message) {
+                    const errorElement = document.createElement('div');
+                    errorElement.classList.add('error-toast');
+                    errorElement.textContent = message;
+                    
+                    document.body.appendChild(errorElement);
+                    
+                    setTimeout(() => {
+                        errorElement.style.animation = 'slideOut 0.3s ease';
+                        setTimeout(() => errorElement.remove(), 300);
+                    }, 3000);
+                }
+            }
+
+            // ==================== Main App Module ====================
+            class ChatApp {
+                constructor() {
+                    this.messagesContainer = document.getElementById('messagesContainer');
+                    this.typingIndicator = document.getElementById('typingIndicator');
+                    this.messageInput = document.getElementById('messageInput');
+                    this.sendBtn = document.getElementById('sendBtn');
+                    this.clearBtn = document.getElementById('clearChatBtn');
+                    this.messageForm = document.getElementById('messageForm');
+                    
+                    this.ui = new ChatUI(
+                        this.messagesContainer,
+                        this.typingIndicator,
+                        this.messageInput,
+                        this.sendBtn,
+                        this.clearBtn
+                    );
+                    
+                    this.isProcessing = false;
+                    this.messages = [];
+                    
+                    this.init();
+                }
+
+                init() {
+                    this.loadChatHistory();
+                    this.setupEventListeners();
+                }
+
+                setupEventListeners() {
+                    this.messageForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.handleSendMessage();
+                    });
+
+                    this.clearBtn.addEventListener('click', () => {
+                        this.handleClearChat();
+                    });
+
+                    this.messageInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            if (!this.isProcessing && this.ui.getInputText()) {
+                                this.handleSendMessage();
+                            }
+                        }
+                    });
+
+                    this.messageInput.addEventListener('input', () => {
+                        const text = this.ui.getInputText();
+                        if (text.length > 500) {
+                            this.messageInput.style.borderColor = 'var(--error-color)';
+                        } else {
+                            this.messageInput.style.borderColor = 'var(--border-color)';
+                        }
+                    });
+                }
+
+                async handleSendMessage() {
+                    const userMessage = this.ui.getInputText();
+                    
+                    if (!this.ui.validateInput(userMessage) || this.isProcessing) {
+                        return;
+                    }
+
+                    this.ui.addMessage(userMessage, 'user');
+                    this.messages.push({ text: userMessage, sender: 'user', timestamp: Date.now() });
+                    this.ui.clearInput();
+                    
+                    this.isProcessing = true;
+                    this.ui.setInputEnabled(false);
+                    
+                    this.ui.showTypingIndicator(true);
+                    
+                    try {
+                        const botResponse = await getBotResponse(userMessage);
+                        
+                        this.ui.addMessage(botResponse, 'bot');
+                        this.messages.push({ text: botResponse, sender: 'bot', timestamp: Date.now() });
+                        
+                        saveMessages(this.messages);
+                    } catch (error) {
+                        this.ui.showError(error.message);
+                        
+                        const errorMessage = 'Произошла ошибка при получении ответа. Пожалуйста, попробуйте позже.';
+                        this.ui.addMessage(errorMessage, 'bot');
+                        this.messages.push({ text: errorMessage, sender: 'bot', timestamp: Date.now() });
+                    } finally {
+                        this.ui.showTypingIndicator(false);
+                        this.isProcessing = false;
+                        this.ui.setInputEnabled(true);
+                    }
+                }
+
+                handleClearChat() {
+                    if (this.messages.length === 0) return;
+                    
+                    if (confirm('Вы уверены, что хотите очистить историю чата?')) {
+                        this.ui.clearMessages();
+                        this.messages = [];
+                        clearSavedMessages();
+                        
+                        const welcomeMessage = 'Чат очищен. Чем могу помочь?';
+                        this.ui.addMessage(welcomeMessage, 'bot');
+                        this.messages.push({ text: welcomeMessage, sender: 'bot', timestamp: Date.now() });
+                        saveMessages(this.messages);
+                    }
+                }
+
+                loadChatHistory() {
+                    const savedMessages = loadMessages();
+                    
+                    if (savedMessages.length > 0) {
+                        this.messages = savedMessages;
+                        this.ui.addMessages(savedMessages);
+                    } else {
+                        const welcomeMessage = 'Здравствуйте! Я виртуальный помощник TechSupport. Задайте мне вопрос о товарах, гарантии, доставке или оплате.';
+                        this.ui.addMessage(welcomeMessage, 'bot');
+                        this.messages.push({ text: welcomeMessage, sender: 'bot', timestamp: Date.now() });
+                        saveMessages(this.messages);
+                    }
+                    
+                    this.ui.scrollToBottom();
+                }
+            }
+
+            // Запуск приложения после загрузки DOM
+            document.addEventListener('DOMContentLoaded', () => {
+                new ChatApp();
+            });
+        })();
+    </script>
 </body>
 </html>
