@@ -8,3 +8,5 @@
 
 ```bash
 pip install fastapi uvicorn sqlalchemy aiosqlite python-jose[cryptography] passlib[bcrypt] pydantic pytest pytest-asyncio httpx
+```
+### 2. Запуск приложения
