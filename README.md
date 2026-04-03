@@ -10,3 +10,10 @@
 pip install fastapi uvicorn sqlalchemy aiosqlite python-jose[cryptography] passlib[bcrypt] pydantic pytest pytest-asyncio httpx
 ```
 ### 2. Запуск приложения
+
+```bash
+python app.py
+```
+Сервер запустится на http://127.0.0.1:8000
+
+### 2. Запуск приложения
